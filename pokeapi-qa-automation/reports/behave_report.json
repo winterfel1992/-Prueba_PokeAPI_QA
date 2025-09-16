@@ -1,0 +1,168 @@
+Feature: Endpoint de detalle de Pokémon # features/section1_pokemon.feature:1
+  Como QA, quiero validar el endpoint GET /pokemon/{pokemon} aplicando técnicas de testing.
+  Feature: Endpoint de detalle de Pokémon  # features/section1_pokemon.feature:1
+
+  @happy_path
+  Scenario: Happy path con nombre válido                     # features/section1_pokemon.feature:8
+    Given la base URL "https://pokeapi.co/api/v2"            # None
+    When consulto el pokemon "pikachu"                       # None
+    Then la respuesta tiene status 200                       # None
+    And el tiempo de respuesta es menor a 2 segundos         # None
+    And el header "Content-Type" contiene "application/json" # None
+    And el JSON contiene los campos obligatorios             # None
+    And el schema del JSON es válido                         # None
+
+  @boundary
+  Scenario Outline: Boundary testing con IDs límite -- @1.1   # features/section1_pokemon.feature:22
+    Given la base URL "https://pokeapi.co/api/v2"             # None
+    When consulto el pokemon por id "1"                       # None
+    Then la respuesta cumple condiciones de límite            # None
+
+  @boundary
+  Scenario Outline: Boundary testing con IDs límite -- @1.2   # features/section1_pokemon.feature:23
+    Given la base URL "https://pokeapi.co/api/v2"             # None
+    When consulto el pokemon por id "1010"                    # None
+    Then la respuesta cumple condiciones de límite            # None
+
+  @boundary
+  Scenario Outline: Boundary testing con IDs límite -- @1.3   # features/section1_pokemon.feature:24
+    Given la base URL "https://pokeapi.co/api/v2"             # None
+    When consulto el pokemon por id "1011"                    # None
+    Then la respuesta cumple condiciones de límite            # None
+
+  @edge_cases
+  Scenario Outline: Nombres con caracteres especiales -- @1.1   # features/section1_pokemon.feature:32
+    Given la base URL "https://pokeapi.co/api/v2"               # None
+    When consulto el pokemon ""   ""                            # None
+    Then obtengo un status code apropiado                       # None
+
+  @edge_cases
+  Scenario Outline: Nombres con caracteres especiales -- @1.2   # features/section1_pokemon.feature:33
+    Given la base URL "https://pokeapi.co/api/v2"               # None
+    When consulto el pokemon ""pi%kachu""                       # None
+    Then obtengo un status code apropiado                       # None
+
+  @edge_cases
+  Scenario Outline: Nombres con caracteres especiales -- @1.3   # features/section1_pokemon.feature:34
+    Given la base URL "https://pokeapi.co/api/v2"               # None
+    When consulto el pokemon ""नमस्ते""                         # None
+    Then obtengo un status code apropiado                       # None
+
+  @edge_cases
+  Scenario Outline: Nombres con caracteres especiales -- @1.4   # features/section1_pokemon.feature:35
+    Given la base URL "https://pokeapi.co/api/v2"               # None
+    When consulto el pokemon ""pikachu\n""                      # None
+    Then obtengo un status code apropiado                       # None
+
+  @headers
+  Scenario: Validación de headers de respuesta             # features/section1_pokemon.feature:38
+    Given la base URL "https://pokeapi.co/api/v2"          # None
+    When consulto el pokemon "bulbasaur"                   # None
+    Then los headers incluyen seguridad y cache apropiados # None
+
+Feature: Paginación de listado de Pokémon # features/section2_pagination.feature:1
+  Para garantizar integridad de datos y navegación.
+  Feature: Paginación de listado de Pokémon  # features/section2_pagination.feature:1
+
+  @pagination_normal
+  Scenario Outline: Paginación normal -- @1.1       # features/section2_pagination.feature:15
+    Given la base URL "https://pokeapi.co/api/v2"   # None
+    When consulto la lista con limit 20 y offset 0  # None
+    Then la respuesta tiene status 200              # None
+    And la página retorna 20 resultados por defecto # None
+    And los enlaces next y previous son coherentes  # None
+
+  @pagination_normal
+  Scenario Outline: Paginación normal -- @1.2       # features/section2_pagination.feature:16
+    Given la base URL "https://pokeapi.co/api/v2"   # None
+    When consulto la lista con limit 20 y offset 20 # None
+    Then la respuesta tiene status 200              # None
+    And la página retorna 20 resultados por defecto # None
+    And los enlaces next y previous son coherentes  # None
+
+  @pagination_normal
+  Scenario Outline: Paginación normal -- @1.3       # features/section2_pagination.feature:17
+    Given la base URL "https://pokeapi.co/api/v2"   # None
+    When consulto la lista con limit 20 y offset 40 # None
+    Then la respuesta tiene status 200              # None
+    And la página retorna 20 resultados por defecto # None
+    And los enlaces next y previous son coherentes  # None
+
+  @limits
+  Scenario: Límites extremos                         # features/section2_pagination.feature:20
+    Given la base URL "https://pokeapi.co/api/v2"    # None
+    When consulto la lista con limit 1 y offset 0    # None
+    Then la respuesta tiene status 200               # None
+    And la página retorna 1 resultado                # None
+    When consulto la lista con limit 1000 y offset 0 # None
+    Then la respuesta tiene status 200               # None
+    And la página retorna entre 1 y 1000 resultados  # None
+
+  @offset_out_of_range
+  Scenario: Offset fuera de rango                       # features/section2_pagination.feature:30
+    Given la base URL "https://pokeapi.co/api/v2"       # None
+    When consulto la lista con limit 20 y offset 999999 # None
+    Then la respuesta tiene status 200                  # None
+    And la página retorna 0 resultados                  # None
+
+  @negative_params
+  Scenario: Parámetros negativos                                    # features/section2_pagination.feature:36
+    Given la base URL "https://pokeapi.co/api/v2"                   # None
+    When consulto la lista con limit -1 y offset -20                # None
+    Then obtengo un status code apropiado para parámetros inválidos # None
+
+  @consistency
+  Scenario: Consistencia temporal                              # features/section2_pagination.feature:41
+    Given la base URL "https://pokeapi.co/api/v2"              # None
+    When consulto dos veces la lista con limit 20 y offset 0   # None
+    Then los resultados son consistentes en un intervalo corto # None
+
+Feature: Pruebas negativas avanzadas # features/section3_negative.feature:1
+  Validar manejo de errores y robustez.
+  Feature: Pruebas negativas avanzadas  # features/section3_negative.feature:1
+
+  @404
+  Scenario: 404 Not Found en pokemon inexistente  # features/section3_negative.feature:8
+    Given la base URL "https://pokeapi.co/api/v2" # None
+    When consulto el pokemon por id "9999999"     # None
+    Then la respuesta tiene status 404            # None
+
+  @400
+  Scenario: 400 Bad Request por parámetros malformados    # features/section3_negative.feature:13
+    Given la base URL "https://pokeapi.co/api/v2"         # None
+    When consulto la lista con limit "abc" y offset "xyz" # None
+    Then la respuesta tiene status 400 o 422              # None
+
+  @429
+  Scenario: 429 Too Many Requests por rate limiting                            # features/section3_negative.feature:18
+    Given la base URL "https://pokeapi.co/api/v2"                              # None
+    When realizo 100 requests rápidos al endpoint de lista                     # None
+    Then eventualmente recibo 429 o la API responde con degradación controlada # None
+
+  @timeout
+  Scenario: Timeout testing simulando conexión lenta   # features/section3_negative.feature:23
+    Given la base URL "https://pokeapi.co/api/v2"      # None
+    When consulto el pokemon "ditto" con timeout 0.001 # None
+    Then la request expira por timeout                 # None
+
+  @injection
+  Scenario Outline: Inyección de parámetros -- @1.1           # features/section3_negative.feature:34
+    Given la base URL "https://pokeapi.co/api/v2"             # None
+    When consulto el pokemon ""' OR '1'='1""                  # None
+    Then la API no ejecuta payloads ni filtra datos sensibles # None
+    And la respuesta tiene un status seguro (4xx)             # None
+
+  @injection
+  Scenario Outline: Inyección de parámetros -- @1.2           # features/section3_negative.feature:35
+    Given la base URL "https://pokeapi.co/api/v2"             # None
+    When consulto el pokemon ""1; DROP TABLE""                # None
+    Then la API no ejecuta payloads ni filtra datos sensibles # None
+    And la respuesta tiene un status seguro (4xx)             # None
+
+  @injection
+  Scenario Outline: Inyección de parámetros -- @1.3           # features/section3_negative.feature:36
+    Given la base URL "https://pokeapi.co/api/v2"             # None
+    When consulto el pokemon ""../../etc/passwd""             # None
+    Then la API no ejecuta payloads ni filtra datos sensibles # None
+    And la respuesta tiene un status seguro (4xx)             # None
+
